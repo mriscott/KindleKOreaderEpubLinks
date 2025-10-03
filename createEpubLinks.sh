@@ -8,30 +8,95 @@
 koreader="/mnt/us/koreader/koreader.sh --asap"
 # location of epubs
 docs="/mnt/us/documents"
+# location of kterm
+kterm="./kterm"
 
 # do not change below here
 
 touch "$0"
+test -z "$1" && echo checking && test -e "$kterm" && echo running  && "$kterm" -e "$0" i   && exit
+
+
+choose(){
+n=0
+for x in *.epub
+do 
+echo "$n ) $x"
+n=$(($n+1))
+done
+echo "q) exit"
+read y
+if [ "$y" = "q" ]
+then
+exit
+fi
+
+n=0
+for x in *.epub
+do 
+if [ "$n" = "$y" ]
+then
+if [ "$1" = "d" ] 
+then
+rm "$x.sh"
+rm "$x.jpg"
+else
+dobook "$x"
+fi
+fi
+n=$(($n+1))
+done
+
+}
+dobook(){
+	f="$1"
+	echo Creating link for $f
+	test -f "$f.sh" && continue
+	sh="$f.sh"
+	opf=$(unzip -p  "$f"  META-INF/container.xml |grep rootfile |sed 's/^.*full-path="//;s/".*$//'|grep -v rootfiles )
+	unzip -p "$f" $opf |sed 's/></>\
+	</g' >contents.obp
+	title=$(grep dc:title contents.obp|sed 's!</dc:title.*$!!;s!.*>!!')
+	echo "#!/bin/sh" >"$sh"
+	echo "# Name: $title" >>"$sh"
+	author=$(grep dc:creator contents.obp|sed 's!</dc:creator.*$!!;s!.*>!!'|head -1)
+	echo "# Author: $author"  >>"$sh"
+	echo "# Last-opened: 0" >> "$sh"
+	echo "# Icon: $docs/$f.jpg" >> "$sh"
+	echo 'timestamp=$(date +%s)' >> "$sh"
+	echo 'sed -i "s/^# Last-opened:.*/# Last-opened: $timestamp/" "$0"' >> "$sh"
+	echo "$koreader \"$docs/$f\"" >> "$sh"
+	icon=$(grep jpeg contents.obp|grep cover|sed 's/.*href=.//;s/".*//;s/.*=//;s/^\s*//;s/\s$//')
+	test ! -z "$icon" && unzip -p "$f" "*$icon" > "$f.jpg"
+	rm contents.obp
+}
 cd "$docs"
+if [ "$1" = "i" ]
+then
+echo Choose an option
+echo "1) Create links"
+echo "2) Delete links"
+read x
+$0 $x
+fi
+
+if [ "$1" = "1" ]
+then
+echo Choose books to link
+choose 
+fi
+if [ "$1" = "2" ]
+then
+echo Choose books to delete
+choose  d
+fi
+
+if [ "$1" = "" ]
+then 
+echo Creating all links
+
 for f in *.epub
 do 
-test -f "$f.sh" && continue
-echo Creating link for $0
-sh="$f.sh"
-opf=$(unzip -p  "$f"  META-INF/container.xml |grep rootfile |sed 's/^.*full-path="//;s/".*$//'|grep -v rootfiles )
-unzip -p "$f" $opf |sed 's/></>\
-</g' >contents.obp
-title=$(grep dc:title contents.obp|sed 's!</dc:title.*$!!;s!.*>!!')
-echo "#!/bin/sh" >"$sh"
-echo "# Name: $title" >>"$sh"
-author=$(grep dc:creator contents.obp|sed 's!</dc:creator.*$!!;s!.*>!!'|head -1)
-echo "# Author: $author"  >>"$sh"
-echo "# Last-opened: 0" >> "$sh"
-echo "# Icon: $docs/$f.jpg" >> "$sh"
-echo 'timestamp=$(date +%s)' >> "$sh"
-echo 'sed -i "s/^# Last-opened:.*/# Last-opened: $timestamp/" "$0"' >> "$sh"
-echo "$koreader \"$docs/$f\"" >> "$sh"
-icon=$(grep jpeg contents.obp|grep cover|sed 's/.*href=.//;s/".*//;s/.*=//;s/^\s*//;s/\s$//')
-test ! -z "$icon" && unzip -p "$f" "*$icon" > "$f.jpg"
-rm contents.obp
+	dobook "$f"
 done
+fi
