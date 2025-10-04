@@ -10,7 +10,8 @@ koreader="/mnt/us/koreader/koreader.sh --asap"
 docs="/mnt/us/documents"
 # location of kterm
 kterm="./kterm"
-
+# no of bookes to dispaly per page
+pagesize=2
 # do not change below here
 
 touch "$0"
@@ -23,15 +24,28 @@ for x in *.epub
 do 
 if [ "$1" = "d" ] 
 then
+action="delete"
 test -e "$x.sh" || continue
 else
+action="link"
 test -e "$x.sh" &&  continue
 fi
 echo "$n ) $x"
 n=$(($n+1))
+if [ $(( $n % $pagesize )) = 0 ]
+then
+echo Press return
+read p
+fi 
 done
+if [ $n = 0 ]
+then
+echo No avaialble books
+exec $0 i
+fi 
 echo "b) back"
 echo "q) exit"
+echo Enter no of book to $action:
 read y
 if [ "$y" = "b" ]
 then
@@ -105,12 +119,10 @@ fi
 
 if [ "$1" = "1" ]
 then
-echo Choose books to link
 choose 
 fi
 if [ "$1" = "2" ]
 then
-echo Choose books to delete
 choose  d
 fi
 
