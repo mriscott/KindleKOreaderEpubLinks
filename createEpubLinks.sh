@@ -21,11 +21,22 @@ choose(){
 n=0
 for x in *.epub
 do 
+if [ "$1" = "d" ] 
+then
+test -e "$x.sh" || continue
+else
+test -e "$x.sh" &&  continue
+fi
 echo "$n ) $x"
 n=$(($n+1))
 done
+echo "b) back"
 echo "q) exit"
 read y
+if [ "$y" = "b" ]
+then
+exec $0 i
+fi
 if [ "$y" = "q" ]
 then
 exit
@@ -34,19 +45,26 @@ fi
 n=0
 for x in *.epub
 do 
+if [ "$1" = "d" ] 
+then
+test -e "$x.sh" || continue
+else
+test -e "$x.sh" &&  continue
+fi
 if [ "$n" = "$y" ]
 then
 if [ "$1" = "d" ] 
 then
 rm "$x.sh"
 rm "$x.jpg"
+#rm "$x"
 else
 dobook "$x"
 fi
 fi
 n=$(($n+1))
 done
-
+choose $1
 }
 dobook(){
 	f="$1"
@@ -76,8 +94,13 @@ then
 echo Choose an option
 echo "1) Create links"
 echo "2) Delete links"
+echo "q) exit "
 read x
-$0 $x
+if [ "$y" = "q" ]
+then
+exit
+fi
+exec $0 $x
 fi
 
 if [ "$1" = "1" ]
