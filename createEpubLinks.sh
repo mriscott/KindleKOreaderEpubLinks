@@ -9,13 +9,15 @@ koreader="/mnt/us/koreader/koreader.sh --asap"
 # location of epubs
 docs="/mnt/us/documents"
 # location of kterm
-kterm="./kterm"
-# no of bookes to dispaly per page
-pagesize=2
+kterm="/mnt/us/extensions/kterm/bin/kterm.sh" 
+# no of books to dispaly per page
+pagesize=10
+
 # do not change below here
 
-touch "$0"
-test -z "$1" && echo checking && test -e "$kterm" && echo running  && "$kterm" -e "$0" i   && exit
+timestamp=$(date +%s)
+touch $0
+test -z "$1" && test -e "$kterm" && "$kterm" -e "$0 i"   && exit
 
 
 choose(){
@@ -40,7 +42,7 @@ fi
 done
 if [ $n = 0 ]
 then
-echo No avaialble books
+echo No available books
 exec $0 i
 fi 
 echo "b) back"
@@ -71,7 +73,7 @@ if [ "$1" = "d" ]
 then
 rm "$x.sh"
 rm "$x.jpg"
-#rm "$x"
+rm "$x"
 else
 dobook "$x"
 fi
