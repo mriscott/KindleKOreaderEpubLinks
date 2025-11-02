@@ -22,8 +22,15 @@ test -z "$1" && test -e "$kterm" && "$kterm" -e "$0 i"   && exit
 
 choose(){
 n=0
-for x in *.epub
+for x in *.epub */*.epub */*/*.epub
 do 
+case "$x" in 
+  *"*"*)
+   continue;
+   ;;
+  *) 
+  ;;
+esac
 if [ "$1" = "d" ] 
 then
 action="delete"
@@ -38,6 +45,7 @@ if [ $(( $n % $pagesize )) = 0 ]
 then
 echo Press return
 read p
+test -z "$p" || break
 fi 
 done
 if [ $n = 0 ]
@@ -47,8 +55,13 @@ exec $0 i
 fi 
 echo "b) back"
 echo "q) exit"
+if [ "$p" = "" ]
+then
 echo Enter no of book to $action:
 read y
+else
+y=$p
+fi
 if [ "$y" = "b" ]
 then
 exec $0 i
@@ -59,8 +72,15 @@ exit
 fi
 
 n=0
-for x in *.epub
+for x in *.epub */*.epub */*/*.epub
 do 
+case "$x" in 
+  *"*"*)
+   continue;
+   ;;
+  *) 
+  ;;
+esac
 if [ "$1" = "d" ] 
 then
 test -e "$x.sh" || continue
@@ -74,6 +94,11 @@ then
 rm "$x.sh"
 rm "$x.jpg"
 rm "$x"
+if [ "$docs" != "/mnt/us/documents" ]
+  then
+   b=$(basename "$x.sh")
+   rm "/mnt/us/documents/$b"
+fi
 else
 dobook "$x"
 fi
@@ -103,6 +128,10 @@ dobook(){
 	icon=$(grep jpeg contents.obp|grep cover|sed 's/.*href=.//;s/".*//;s/.*=//;s/^\s*//;s/\s$//')
 	test ! -z "$icon" && unzip -p "$f" "*$icon" > "$f.jpg"
 	rm contents.obp
+	if [ $docs != "/mnt/us/documents" ]
+	then
+	  cp "$f.sh" /mnt/us/documents
+  	fi
 }
 cd "$docs"
 if [ "$1" = "i" ]
@@ -132,8 +161,15 @@ if [ "$1" = "" ]
 then 
 echo Creating all links
 
-for f in *.epub
+for x in *.epub */*.epub */*/*.epub
 do 
+case "$x" in 
+  *"*"*)
+   continue;
+   ;;
+  *) 
+  ;;
+esac
 	dobook "$f"
 done
 fi
