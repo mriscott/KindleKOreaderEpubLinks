@@ -109,8 +109,8 @@ choose $1
 }
 dobook(){
 	f="$1"
-	echo Creating link for $f
 	test -f "$f.sh" && continue
+	echo Creating link for $f
 	sh="$f.sh"
 	opf=$(unzip -p  "$f"  META-INF/container.xml |grep rootfile |sed 's/^.*full-path="//;s/".*$//'|grep -v rootfiles )
 	unzip -p "$f" $opf |sed 's/></>\
@@ -170,6 +170,7 @@ case "$x" in
   *) 
   ;;
 esac
-	dobook "$f"
+	dobook "$x"
 done
+echo Done
 fi
