@@ -13,7 +13,8 @@ docs="/mnt/us/documents"
 kterm="/mnt/us/extensions/kterm/bin/kterm.sh" 
 # no of books to dispaly per page
 pagesize=10
-
+# uncomment to keep epub when deleting links
+#keepepub=y
 # do not change below here
 
 timestamp=$(date +%s)
@@ -40,7 +41,9 @@ else
 action="link"
 test -e "$x.sh" &&  continue
 fi
-echo "$n ) $x"
+name=${x/.epub/}
+test -e "$x.sh" && name=$(grep Name: "$x.sh"|sed 's/# Name://')
+echo "$n ) $name"
 n=$(($n+1))
 if [ $(( $n % $pagesize )) = 0 ]
 then
@@ -94,7 +97,7 @@ if [ "$1" = "d" ]
 then
 rm "$x.sh"
 rm "$x.jpg"
-rm "$x"
+test -z "$keepepub" && rm "$x"
 if [ "$docs" != "/mnt/us/documents" ]
   then
    b=$(basename "$x.sh")
@@ -138,7 +141,8 @@ cd "$docs"
 if [ "$1" = "i" ]
 then
 echo Choose an option
-echo "1) Create links"
+echo "0) Create links for all"
+echo "1) Choose links to create"
 echo "2) Delete links"
 echo "q) exit "
 read x
@@ -158,7 +162,7 @@ then
 choose  d
 fi
 
-if [ "$1" = "" ]
+if [ "$1" = "0" ]
 then 
 echo Creating all links
 
